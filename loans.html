@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loans - CRDB Bank</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <script src="../assets/js/script.js" defer></script>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">🏦 CRDB Bank</div>
+            <ul class="nav-links">
+                <li><a href="dashboard.html">Dashboard</a></li>
+                <li><a href="loans.html" class="active">Loans</a></li>
+                <li><a href="transactions.html">Transactions</a></li>
+                <li><a href="login.html">Logout</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="dashboard">
+        <h1>🏦 Loan Management</h1>
+        
+        <div class="loan-grid">
+            <div class="loan-card apply">
+                <h3>Apply for Loan</h3>
+                <p>Get instant loan approval</p>
+                <button onclick="showLoanForm()">Apply Now</button>
+            </div>
+            
+            <div id="loans-list">
+                <p>Loading your loans...</p>
+            </div>
+        </div>
+
+        <!-- Loan Application Modal -->
+        <div id="loanModal" class="modal" style="display:none;">
+            <div class="modal-content">
+                <span class="close" onclick="closeLoanForm()">&times;</span>
+                <h2>Loan Application</h2>
+                <form id="loanForm">
+                    <div class="input-group">
+                        <label>Loan Amount (TZS)</label>
+                        <input type="number" id="loanAmount" min="10000" step="1000" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Interest Rate (%)</label>
+                        <input type="number" id="interestRate" min="5" max="20" step="0.1" value="8.5" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Term (months)</label>
+                        <select id="loanTerm">
+                            <option>6</option><option>12</option><option>24</option><option>36</option><option>60</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>Purpose</label>
+                        <textarea id="loanPurpose" required></textarea>
+                    </div>
+                    <button type="submit">Submit Application</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function loadLoans() {
+            try {
+                const loans = await apiFetch('/loans');
+                const container = document.getElementById('loans-list');
+                if (loans.length === 0) {
+                    container.innerHTML = '<p>No active loans. Apply for one above!</p>';
+                } else {
+                    container.innerHTML = loans.map(loan => `
+                        <div class="loan-card">
+                            <h3>${loan.status.toUpperCase()}</h3>
+                            <p>Ref: ${loan.loan_ref}</p>
+                            <p>Amount: TZS ${loan.principal_amount.toLocaleString()}</p>
+                            <p>Rate: ${loan.interest_rate}% | Term: ${loan.term_months} months</p>
+                            <p>Monthly: TZS ${loan.monthly_payment?.toLocaleString() || 'Pending'}</p>
+                        </div>
+                    `).join('');
+                }
+            } catch (error) {
+                document.getElementById('loans-list').innerHTML = `<p>Error loading loans: ${error.message}</p>`;
+            }
+        }
+
+        function showLoanForm() {
+            document.getElementById('loanModal').style.display = 'flex';
+        }
+
+        function closeLoanForm() {
+            document.getElementById('loanModal').style.display = 'none';
+        }
+
+        document.getElementById('loanForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = {
+                principal_amount: parseFloat(document.getElementById('loanAmount').value),
+                interest_rate: parseFloat(document.getElementById('interestRate').value),
+                term_months: parseInt(document.getElementById('loanTerm').value),
+                purpose: document.getElementById('loanPurpose').value
+            };
+
+            try {
+                const response = await apiFetch('/loans/apply', {
+                    method: 'POST',
+                    body: JSON.stringify(formData)
+                });
+                
+                closeLoanForm();
+                alert(`Application submitted! Ref: ${response.loan_ref}\nMonthly: TZS ${response.estimated_monthly_payment}`);
+                loadLoans(); // Refresh list
+            } catch (error) {
+                alert('Application failed: ' + error.message);
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', loadLoans);
+    </script>
+
+    <style>
+        .loan-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; }
+        .loan-card { 
+            padding: 2rem; 
+            border-radius: 1rem; 
+            background: rgba(27,38,59,0.8); 
+            text-align: center; 
+            cursor: pointer; 
+            transition: transform 0.3s; 
+        }
+        .loan-card:hover { transform: translateY(-5px); }
+        .loan-card.apply { border: 2px dashed #00b4d8; }
+        .loan-card.approved { border-left: 5px solid #00b4d8; }
+        .loan-card.active { border-left: 5px solid #4ade80; }
+        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+        .modal-content { background: rgba(27,38,59,0.95); padding: 2rem; border-radius: 1rem; max-width: 500px; width: 90%; position: relative; max-height: 90vh; overflow-y: auto; }
+        .close { position: absolute; top: 1rem; right: 1.5rem; font-size: 2rem; cursor: pointer; color: #e0e1dd; }
+    </style>
+</body>
+</html>

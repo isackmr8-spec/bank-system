@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - CRDB Bank</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <script src="../assets/js/script.js" defer></script>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">🏦 CRDB Bank</div>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="dashboard.html" class="active">Dashboard</a></li>
+                <li><a href="transfer.html">Transfer</a></li>
+                <li><a href="transactions.html">Transactions</a></li>
+                <li><a href="loans.html">Loans</a></li>
+                <li><a href="login.html">Logout</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="dashboard">
+        <div class="welcome-section">
+            <h1>Welcome back!</h1>
+            <p>Your banking at your fingertips</p>
+        </div>
+        
+        <div class="dashboard-grid">
+            <div class="card" data-action="balance">
+                <h3>💰 Total Balance</h3>
+                <p id="total-balance">Loading...</p>
+            </div>
+            <div class="card" data-action="accounts">
+                <h3>🏦 Accounts</h3>
+                <p id="account-count">Loading...</p>
+            </div>
+            <div class="card" data-action="recent">
+                <h3>📊 Recent Transactions</h3>
+                <p id="recent-count">Loading...</p>
+            </div>
+            <div class="card" data-action="transfer">
+                <h3>💸 Quick Transfer</h3>
+                <p>Send money instantly</p>
+            </div>
+        </div>
+
+        <div class="accounts-section">
+            <h2>Your Accounts</h2>
+            <div id="accounts-list">
+                <p>Loading accounts...</p>
+            </div>
+        </div>
+
+        <div class="transactions-section">
+            <h2>Recent Transactions</h2>
+            <table id="transactions-table">
+                <thead>
+                    <tr>
+                        <th>Type</th>
+                        <th>Amount</th>
+                        <th>Date</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td colspan="4">Loading...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

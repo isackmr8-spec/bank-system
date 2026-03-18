@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transactions - CRDB Bank</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <script src="../assets/js/script.js" defer></script>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">🏦 CRDB Bank</div>
+            <ul class="nav-links">
+                <li><a href="dashboard.html">Dashboard</a></li>
+                <li><a href="transfer.html">Transfer</a></li>
+                <li><a href="transactions.html" class="active">Transactions</a></li>
+                <li><a href="loans.html">Loans</a></li>
+                <li><a href="login.html">Logout</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="dashboard">
+        <h1>📜 Transaction History</h1>
+        
+        <div class="filters">
+            <select id="filterType">
+                <option>All Types</option>
+                <option>Deposit</option>
+                <option>Withdraw</option>
+                <option>Transfer</option>
+            </select>
+            <input type="date" id="filterFrom">
+            <input type="date" id="filterTo">
+            <button onclick="loadTransactions()">Filter</button>
+        </div>
+
+        <div id="transactionsContainer">
+            <p>Loading transactions...</p>
+        </div>
+
+        <div class="summary">
+            <div>Total Deposits: <span id="totalDeposits">TZS 0</span></div>
+            <div>Total Withdrawals: <span id="totalWithdrawals">TZS 0</span></div>
+            <div>Net Balance Change: <span id="netChange">TZS 0</span></div>
+        </div>
+    </div>
+
+    <script>
+        async function loadTransactions(type = '', from = '', to = '') {
+            try {
+                const params = new URLSearchParams({ limit: 50 });
+                if (type) params.append('type', type);
+                if (from) params.append('from', from);
+                if (to) params.append('to', to);
+                
+                const transactions = await apiFetch(`/transactions?${params}`);
+                
+                const container = document.getElementById('transactionsContainer');
+                container.innerHTML = transactions.map(tx => `
+                    <div class="transaction-item">
+                        <div>
+                            <strong>${tx.transaction_type.toUpperCase()}</strong><br>
+                            <small>${tx.description || 'N/A'}</small>
+                        </div>
+                        <div class="amount ${tx.transaction_type === 'withdraw' ? 'negative' : 'positive'}">
+                            ${tx.transaction_type === 'withdraw' ? '-' : '+'}TZS ${tx.amount.toLocaleString()}
+                        </div>
+                        <div class="status">${tx.status}</div>
+                        <div class="date">${new Date(tx.created_at).toLocaleString()}</div>
+                    </div>
+                `).join('') || '<p>No transactions found</p>';
+
+                // Update summary (simplified)
+                document.getElementById('totalDeposits').textContent = 'TZS 0';
+                document.getElementById('totalWithdrawals').textContent = 'TZS 0';
+                document.getElementById('netChange').textContent = 'TZS 0';
+
+            } catch (error) {
+                document.getElementById('transactionsContainer').innerHTML = `<p>Error: ${error.message}</p>`;
+            }
+        }
+
+        // Load on page ready
+        document.addEventListener('DOMContentLoaded', () => {
+            loadTransactions();
+        });
+    </script>
+
+    <style>
+        .filters { display: flex; gap: 1rem; margin-bottom: 2rem; }
+        .filters select, .filters input { padding: 0.5rem; border-radius: 0.5rem; border: 1px solid #415a77; background: rgba(255,255,255,0.1); color: #e0e1dd; }
+        .transaction-item { 
+            display: grid; 
+            grid-template-columns: 2fr 1fr 1fr 1fr; 
+            gap: 1rem; 
+            padding: 1rem; 
+            border: 1px solid #415a77; 
+            border-radius: 0.5rem; 
+            margin-bottom: 0.5rem; 
+        }
+        .amount { font-weight: bold; font-size: 1.2rem; text-align: right; }
+        .amount.positive { color: #00b4d8; }
+        .amount.negative { color: #ff6b6b; }
+        .status { text-transform: uppercase; font-size: 0.8rem; }
+        .summary { display: flex; justify-content: space-around; padding: 1rem; background: rgba(27,38,59,0.8); border-radius: 1rem; margin-top: 2rem; }
+    </style>
+</body>
+</html>

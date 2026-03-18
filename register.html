@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - CRDB Bank</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">🏦 CRDB Bank</div>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="login.html">Login</a></li>
+                <li><a href="register.html" class="active">Register</a></li>
+                <li><a href="admin.html">Admin</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h2>Customer Registration</h2>
+        <p style="text-align: center; margin-bottom: 20px; opacity: 0.8;">Create your bank account securely</p>
+        
+        <form id="registerForm">
+            <div class="input-group">
+                <input type="text" name="fullname" placeholder="Full Name" required>
+            </div>
+            <div class="input-group">
+                <input type="tel" name="phone" placeholder="Phone Number (+255...)" required>
+            </div>
+            <div class="input-group">
+                <input type="email" name="email" placeholder="Email Address" required>
+            </div>
+            <div class="input-group">
+                <input type="text" name="nida" placeholder="National ID (NIDA)" required>
+            </div>
+            <div class="input-group">
+                <input type="date" name="dob" required>
+            </div>
+            <div class="input-group">
+                <input type="text" name="address" placeholder="Address" required>
+            </div>
+            <div class="input-group">
+                <input type="password" name="password" placeholder="Password" required>
+            </div>
+            <div class="input-group">
+                <input type="password" name="confirmPassword" placeholder="Confirm Password" required>
+            </div>
+            <div class="input-group">
+                <label>
+                    <input type="checkbox" name="terms" required style="width: auto; margin-right: 10px;">
+                    I accept Terms & Conditions
+                </label>
+            </div>
+            <button type="submit" class="btn">Create Account</button>
+        </form>
+
+        <div class="otp-section">
+            <h3>Verify with OTP</h3>
+            <p>Sent to your phone</p>
+            <button id="sendOtpBtn" class="btn btn-secondary">Resend OTP</button>
+            <div class="input-group">
+                <input type="text" class="otp-input" placeholder="Enter 6-digit OTP" maxlength="6">
+            </div>
+            <button id="verifyOtpBtn" class="btn">Verify & Register</button>
+        </div>
+
+        <div class="success-msg"></div>
+        <div class="error-msg"></div>
+
+        <div class="links">
+            <a href="login.html">Already have account? Login</a>
+        </div>
+    </div>
+
+    <script src="../assets/js/script.js"></script>
+</body>
+</html>
+

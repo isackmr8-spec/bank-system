@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reports - CRDB Bank Admin</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <script src="../assets/js/script.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">🏦 CRDB Admin</div>
+            <ul class="nav-links">
+                <li><a href="admin.html">Dashboard</a></li>
+                <li><a href="reports.html" class="active">Reports</a></li>
+                <li><a href="login.html">Logout</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="dashboard">
+        <h1>📊 Banking Reports & Analytics</h1>
+        
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>Total Customers</h3>
+                <p id="totalCustomers">-</p>
+            </div>
+            <div class="stat-card">
+                <h3>Total Balance</h3>
+                <p id="totalBalance">TZS 0</p>
+            </div>
+            <div class="stat-card">
+                <h3>Today's Transactions</h3>
+                <p id="todayTx">-</p>
+            </div>
+            <div class="stat-card">
+                <h3>Active Loans</h3>
+                <p id="activeLoans">-</p>
+            </div>
+        </div>
+
+        <div class="charts-grid">
+            <div class="chart-container">
+                <h3>Daily Transactions (7 days)</h3>
+                <canvas id="txChart"></canvas>
+            </div>
+            <div class="chart-container">
+                <h3>Transaction Types Breakdown</h3>
+                <canvas id="typeChart"></canvas>
+            </div>
+        </div>
+
+        <div class="recent-section">
+            <h3>Recent Activity</h3>
+            <div id="recentActivity">
+                Loading...
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function loadReports() {
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) throw new Error('Not authenticated');
+
+                // Admin reports
+                const reports = await apiFetch('/admin/reports');
+
+                // Update stats
+                document.getElementById('totalCustomers').textContent = reports.total_customers?.count || 0;
+                document.getElementById('totalBalance').textContent = `TZS ${reports.total_balance?.total?.toLocaleString() || 0}`;
+                document.getElementById('todayTx').textContent = reports.daily_transactions?.[0]?.count || 0;
+                document.getElementById('activeLoans').textContent = reports.active_loans?.count || 0;
+
+                // Recent activity
+                document.getElementById('recentActivity').innerHTML = reports.recent_transactions?.map(tx => `
+                    <div class="activity-item">
+                        <span class="type">${tx.transaction_type}</span>
+                        <span class="amount">${tx.amount}</span>
+                        <span class="time">${new Date(tx.created_at).toLocaleString()}</span>
+                    </div>
+                `).join('') || '<p>No recent activity</p>';
+
+                // Charts
+                createCharts(reports);
+            } catch (error) {
+                console.error('Reports error:', error);
+                document.querySelector('.dashboard h1').innerHTML += '<br><small style="color:red">Error loading reports</small>';
+            }
+        }
+
+        function createCharts(reports) {
+            // Transaction chart
+            const ctx1 = document.getElementById('txChart').getContext('2d');
+            new Chart(ctx1, {
+                type: 'line',
+                data: {
+                    labels: reports.daily_transactions?.map(d => d.date) || [],
+                    datasets: [{
+                        label: 'Transactions',
+                        data: reports.daily_transactions?.map(d => d.count) || [],
+                        borderColor: '#00b4d8',
+                        tension: 0.4
+                    }]
+                }
+            });
+
+            // Type breakdown (mock for demo)
+            const ctx2 = document.getElementById('typeChart').getContext('2d');
+            new Chart(ctx2, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Deposits', 'Withdrawals', 'Transfers'],
+                    datasets: [{
+                        data: [45, 32, 23],
+                        backgroundColor: ['#4ade80', '#ff6b6b', '#f59e0b']
+                    }]
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', loadReports);
+    </script>
+
+    <style>
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+        .stat-card { background: rgba(27,38,59,0.8); padding: 1.5rem; border-radius: 1rem; text-align: center; }
+        .stat-card h3 { color: #00b4d8; margin-bottom: 0.5rem; font-size: 0.9rem; }
+        .chart-container { background: rgba(27,38,59,0.8); padding: 1.5rem; border-radius: 1rem; margin-bottom: 2rem; }
+        .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+        .recent-section h3 { margin-bottom: 1rem; color: #00b4d8; }
+        .activity-item { display: flex; justify-content: space-between; padding: 1rem; background: rgba(255,255,255,0.05); border-radius: 0.5rem; margin-bottom: 0.5rem; }
+        .type { font-weight: bold; }
+        canvas { max-height: 300px; }
+        @media (max-width: 768px) { .charts-grid { grid-template-columns: 1fr; } }
+    </style>
+</body>
+</html>

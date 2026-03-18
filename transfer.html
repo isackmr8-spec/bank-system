@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transfer Money - CRDB Bank</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <script src="../assets/js/script.js" defer></script>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">🏦 CRDB Bank</div>
+            <ul class="nav-links">
+                <li><a href="dashboard.html">Dashboard</a></li>
+                <li><a href="transfer.html" class="active">Transfer</a></li>
+                <li><a href="transactions.html">History</a></li>
+                <li><a href="login.html">Logout</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h2>💸 Transfer Money</h2>
+        
+        <form id="transferForm">
+            <div class="input-group">
+                <label>From Account</label>
+                <select id="fromAccount" required>
+                    <option>Loading accounts...</option>
+                </select>
+            </div>
+            
+            <div class="input-group">
+                <label>To Account ID</label>
+                <input type="text" id="toAccount" placeholder="Enter account ID" required>
+            </div>
+            
+            <div class="input-group">
+                <label>Amount (TZS)</label>
+                <input type="number" id="amount" min="100" step="50" placeholder="0.00" required>
+            </div>
+            
+            <div class="input-group">
+                <label>Description</label>
+                <input type="text" id="description" placeholder="e.g. Family support">
+            </div>
+            
+            <button type="submit" class="btn">Send Money</button>
+        </form>
+
+        <div class="success-msg"></div>
+        <div class="error-msg"></div>
+    </div>
+
+    <script>
+        // Load accounts on page load
+        document.addEventListener('DOMContentLoaded', async () => {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            try {
+                const accounts = await apiFetch('/accounts');
+                const select = document.getElementById('fromAccount');
+                select.innerHTML = accounts.map(acc => 
+                    `<option value="${acc.id}">${acc.id} - ${acc.account_type.toUpperCase()} (TZS ${acc.balance.toLocaleString()})</option>`
+                ).join('');
+            } catch (error) {
+                document.querySelector('.error-msg').textContent = 'Failed to load accounts';
+                document.querySelector('.error-msg').style.display = 'block';
+            }
+        });
+
+        document.getElementById('transferForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = {
+                to_account_id: document.getElementById('toAccount').value,
+                amount: parseFloat(document.getElementById('amount').value),
+                description: document.getElementById('description').value
+            };
+
+            try {
+                const response = await apiFetch('/transactions/transfer', {
+                    method: 'POST',
+                    body: JSON.stringify(formData)
+                });
+                
+                document.querySelector('.success-msg').textContent = `Transfer successful! Ref: ${response.transaction_ref}`;
+                document.querySelector('.success-msg').style.display = 'block';
+                document.getElementById('transferForm').reset();
+            } catch (error) {
+                document.querySelector('.error-msg').textContent = error.message;
+                document.querySelector('.error-msg').style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>
